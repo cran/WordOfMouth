@@ -1,8 +1,12 @@
 #' Class \code{WoMNetwork}
+#' 
+#' This class represents an average random graph.
 #'
 #' @name WoMNetwork-class
 #' @aliases WoMNetwork-class
 #' @docType class
+#' @slot size (numeric) The number of consumers in the network.
+#' @slot avgConnections (numeric) Average number of connections per consumer.
 #' @author Michael Scholz \email{michael.scholz@@th-deg.de}
 #' @author Thomas Woehner \email{Thomas.Woehner@@eah-jena.de}
 #' @author Ralf Peters \email{ralf.peters@@wiwi.uni-halle.de}
@@ -25,9 +29,15 @@ setClass(
 
 #' Class \code{WoMCampaign}
 #' 
+#' This class represents a WoM campaign that is performed on a given network to promote a durable good with no variable costs.
+#' 
 #' @name WoMCampaign-class
 #' @aliases WoMCampaign-class
 #' @docType class
+#' @slot network (WoMNetwork) The network to which the WoM campaign is applied.
+#' @slot seedingSize (numeric) Number of consumers who are initially informed about the good by the firm.
+#' @slot forwardProbability (numeric) Probability at which a consumer forwards information about the good to others.
+#' @slot informationCosts (numeric) Costs to information one consumer about the good.
 #' @author Michael Scholz \email{michael.scholz@@th-deg.de}
 #' @author Thomas Woehner \email{Thomas.Woehner@@eah-jena.de}
 #' @author Ralf Peters \email{ralf.peters@@wiwi.uni-halle.de}
@@ -46,7 +56,8 @@ setClass(
     representation(
         network = "WoMNetwork",
         seedingSize = "numeric",
-        forwardProbability = "numeric"
+        forwardProbability = "numeric",
+        informationCosts = "numeric"
     )
 )
 

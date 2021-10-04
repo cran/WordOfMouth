@@ -57,7 +57,7 @@ computeRoundDemand = function(campaign, price, round, previousRounds = TRUE) {
     d = d0
     dt = d0
     for (t in 1:round) {
-        dround = (1-wom^dprev)*(h-d)
+        dround = (1 - wom^dprev)*(h - d)
         dt = c(dt, dround)
         dprev = dround
         d = d + dround
@@ -90,7 +90,9 @@ computeRoundDemand = function(campaign, price, round, previousRounds = TRUE) {
 #' @export
 computeProfit = function(campaign, price) {
     demand = computeDemand(campaign, price)
-    profit = demand * price
+    ci = ifelse(.hasSlot(campaign, "informationCosts") && length(campaign@informationCosts) > 0, 
+                campaign@informationCosts, 0)
+    profit = demand * price - campaign@seedingSize * ci
     return(profit)
 }
 
@@ -115,7 +117,7 @@ computeProfit = function(campaign, price) {
 #' @export
 computeConsumerSurplus = function(campaign, price) {
     demand = computeDemand(campaign, price)
-    surplus = demand*(1-price)/2
+    surplus = demand*(1 - price)/2
     return(surplus)
 }
 
@@ -152,4 +154,96 @@ computeOptimalPrice = function(campaign) {
     optPrice = optim(par = 0.5, fn = computeProfit, gr = .gradPrice, campaign = campaign,
                      lower = 0, upper = 1, method = "L-BFGS-B", control = list(fnscale = -1))$par
     return(optPrice)
+}
+
+
+#' Computes the WoM intensity
+#' 
+#' Computes the WoM intensity in a given Word-of-Mouth campaign.
+#' 
+#' @param campaign Word-of-Mouth campaign as instance of class \code{WoMCampaign}.
+#' @author Michael Scholz \email{michael.scholz@@th-deg.de}
+#' @author Thomas Woehner \email{Thomas.Woehner@@eah-jena.de}
+#' @author Ralf Peters \email{ralf.peters@@wiwi.uni-halle.de}
+#' @return WoM intensity in [0; 1].
+#' @examples 
+#' 
+#' network <- new("WoMNetwork", size = 1000, avgConnections = 5)
+#' campaign <- new("WoMCampaign", network = network, seedingSize = 10, forwardProbability = 0.2)
+#' intensity <- computeWoMIntensity(campaign)
+#' print(intensity)
+#' 
+#' @export
+computeWoMIntensity = function(campaign) {
+    eta = campaign@network@avgConnections * campaign@forwardProbability / (campaign@network@size - 1)
+    return(eta)
+}
+
+
+#' Computes the information costs threshold
+#' 
+#' Computes the information costs that need to be surpassed in order to generate a higher profit than in 
+#' a transparent market.
+#' 
+#' @param campaign Word-of-Mouth campaign as instance of class \code{WoMCampaign}.
+#' @author Michael Scholz \email{michael.scholz@@th-deg.de}
+#' @author Thomas Woehner \email{Thomas.Woehner@@eah-jena.de}
+#' @author Ralf Peters \email{ralf.peters@@wiwi.uni-halle.de}
+#' @return Information costs in [0; 1] that need to be surpassed in order to generate a higher profit than in a 
+#' transparent market.
+#' @seealso \code{\link{computeOptimalPrice}} \code{\link{computeProfit}}
+#' @examples 
+#' 
+#' network <- new("WoMNetwork", size = 1000, avgConnections = 5)
+#' campaign <- new("WoMCampaign", network = network, seedingSize = 10, forwardProbability = 0.2)
+#' threshold <- computeInformationCostsThreshold(campaign)
+#' print(threshold)
+#' 
+#' @export
+computeInformationCostsThreshold = function(campaign) {
+    price = computeOptimalPrice(campaign)
+    threshold = campaign@network@size * (price - price^2 - 0.25) / (campaign@seedingSize - campaign@network@size)
+    return(threshold)
+}
+
+
+#' Compares the welfare of the WoM campaign to that of a fully informed market
+#' 
+#' Compares the welfare of the WoM campaign to the welfare of a fully informed market assuming a uniformly distributed willingness to pay.
+#' 
+#' @param campaign Word-of-Mouth campaign as instance of class \code{WoMCampaign}.
+#' @author Michael Scholz \email{michael.scholz@@th-deg.de}
+#' @author Thomas Woehner \email{Thomas.Woehner@@eah-jena.de}
+#' @author Ralf Peters \email{ralf.peters@@wiwi.uni-halle.de}
+#' @return Data frame containing the profit-maximizing price, the resulting demand, profit, consumer surplus and 
+#' economic welfare for a fully informed market and a WoM market.
+#' @seealso \code{\link{computeOptimalPrice}} \code{\link{computeProfit}} \code{\link{computeConsumerSurplus}}
+#' @examples 
+#' 
+#' network <- new("WoMNetwork", size = 1000, avgConnections = 5)
+#' campaign <- new("WoMCampaign", network = network, seedingSize = 10, forwardProbability = 0.2)
+#' comparison <- compareToFIMarket(campaign)
+#' print(comparison)
+#' 
+#' @export
+compareToFIMarket = function(campaign) {
+    pWoM = computeOptimalPrice(campaign)
+    dWoM = computeDemand(campaign, pWoM)
+    prWoM = computeProfit(campaign, pWoM)
+    csWoM = computeConsumerSurplus(campaign, pWoM)
+    ewWoM = prWoM + csWoM
+    pInf = 0.5
+    dInf = (1 - pInf) * campaign@network@size
+    ci = ifelse(.hasSlot(campaign, "informationCosts") && length(campaign@informationCosts) > 0, 
+                campaign@informationCosts, 0)
+    prInf = dInf * pInf - campaign@network@size * ci
+    csInf = campaign@network@size * (1 - pInf)^2 / 2
+    ewInf = prInf + csInf
+    result = data.frame(market = c("Fully Informed Market", "WoM Market"),
+                        price = c(pInf, pWoM),
+                        demand = c(dInf, dWoM),
+                        profit = c(prInf, prWoM),
+                        consumerSurplus = c(csInf, csWoM),
+                        welfare = c(ewInf, ewWoM))
+    return(result)
 }

@@ -5,8 +5,20 @@
 \alias{WoMCampaign-class}
 \title{Class \code{WoMCampaign}}
 \description{
-Class \code{WoMCampaign}
+This class represents a WoM campaign that is performed on a given network to promote a durable good with no variable costs.
 }
+\section{Slots}{
+
+\describe{
+\item{\code{network}}{(WoMNetwork) The network to which the WoM campaign is applied.}
+
+\item{\code{seedingSize}}{(numeric) Number of consumers who are initially informed about the good by the firm.}
+
+\item{\code{forwardProbability}}{(numeric) Probability at which a consumer forwards information about the good to others.}
+
+\item{\code{informationCosts}}{(numeric) Costs to information one consumer about the good.}
+}}
+
 \section{Objects from the Class}{
  Objects can be created by calls of the form
 \code{new("WoMCampaign", ...)}. This S4 class describes \code{WoMNetwork} objects.

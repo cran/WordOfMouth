@@ -5,8 +5,16 @@
 \alias{WoMNetwork-class}
 \title{Class \code{WoMNetwork}}
 \description{
-Class \code{WoMNetwork}
+This class represents an average random graph.
 }
+\section{Slots}{
+
+\describe{
+\item{\code{size}}{(numeric) The number of consumers in the network.}
+
+\item{\code{avgConnections}}{(numeric) Average number of connections per consumer.}
+}}
+
 \section{Objects from the Class}{
  Objects can be created by calls of the form
 \code{new("WoMNetwork", ...)}. This S4 class describes \code{WoMNetwork} objects.
