@@ -1,14 +1,14 @@
-054c15200336cbccf273ced0e6c49857 *DESCRIPTION
-d7eb472872cd9e7aa0959f4a2d803133 *NAMESPACE
-91a4ff18cd5e71d6a7cc81f92040d5e9 *NEWS.md
+9e96ed72c6f5b1a80111889bd2ff5afc *DESCRIPTION
+a24a88ae6e7a757fc2884e2a288a7fb5 *NAMESPACE
+586866e9b0691f6eeb59d44214b286cd *NEWS.md
 9a4492e4f20fc1054cd5d0d896b835bc *R/Classes.r
-8537964687136cd593b57580de27bbbc *R/Computation.r
-581fc5324ea519c6a46186b8732efa2d *R/WordOfMouth-package.r
+57fc073044ae7ce3bade51fe3313a4c9 *R/Computation.r
+46808abab449286d01d044c91efdb633 *R/WordOfMouth-package.r
 58976b8f7c09de01f4ab0997950dd87c *man/WoMCampaign-class.Rd
 2d8a86256a08bbf75ee6fc86d924c4b9 *man/WoMCampaign-method.Rd
 b20b2ee0c93e73ffe482c794d6fe091d *man/WoMNetwork-class.Rd
 637bb3a64dd9bf9f6bc7bf7fd6509c62 *man/WoMNetwork-method.Rd
-557aad91c5b5d30ce3d338a9174f4571 *man/WordOfMouth-package.Rd
+6404cdf521fc1d4bc10683bd2412fed2 *man/WordOfMouth-package.Rd
 f0550d20740ae2b1f9076b73415b6853 *man/compareToFIMarket.Rd
 72ef9efb3cc2cb61b833d2369853724f *man/computeConsumerSurplus.Rd
 1abba6e9cd67d788b7866a5c56268916 *man/computeDemand.Rd
@@ -17,3 +17,4 @@ f0550d20740ae2b1f9076b73415b6853 *man/compareToFIMarket.Rd
 5b0c209aec2f558a00ddf431e23a4e94 *man/computeProfit.Rd
 bf7abe97289fc5dea955bc232d5515bd *man/computeRoundDemand.Rd
 6767aa399b7454b11e654d03dc1fbb46 *man/computeWoMIntensity.Rd
+f1d4318ddb5309c95ebe9dc70e991322 *man/incentivizeWoM.Rd

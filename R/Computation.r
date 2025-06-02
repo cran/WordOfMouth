@@ -69,6 +69,7 @@ computeRoundDemand = function(campaign, price, round, previousRounds = TRUE) {
     }
 }
 
+
 #' Computes the expected profit
 #' 
 #' Computes the expected profit for a given Word-of-Mouth campaign at a given price.
@@ -96,6 +97,7 @@ computeProfit = function(campaign, price) {
     return(profit)
 }
 
+
 #' Computes the expected cumulative consumer surplus
 #' 
 #' Computes the expected cumulative consumer surplus for a given Word-of-Mouth campaign at a given price.
@@ -122,13 +124,13 @@ computeConsumerSurplus = function(campaign, price) {
 }
 
 .gradPrice = function(price, campaign) {
-    wom = 1 - (campaign@network@avgConnections * campaign@forwardProbability) / (campaign@network@size - 1)
-    t1 = 1/log(wom)*(price)*(-(log(wom)*(campaign@seedingSize - campaign@network@size)*wom^(campaign@network@size*(1 - price)) - campaign@network@size*(log(wom))^2*wom^(campaign@network@size*(1 - price))*(campaign@network@size*(1 - price) - campaign@seedingSize*(1 - price))) * 
-                                 deriv_W(log(wom)*wom^(campaign@network@size*(1 - price))*(campaign@network@size*(1 - price) - campaign@seedingSize*(1 - price))) - campaign@network@size*log(wom))
-    t2 = (campaign@network@size*(1 - price)*log(wom) - W((campaign@network@size*(1 - price) - (1 - price)*campaign@seedingSize)*wom^(campaign@network@size*(1-price))*log(wom)))/log(wom)
-    grad = t1 + t2
+    wom = (campaign@network@avgConnections * campaign@forwardProbability) / (campaign@network@size - 1)
+    fp = (campaign@network@size - campaign@seedingSize)*(1 - price)*(1 - wom)^(campaign@network@size*(1 - price))*log(1 - wom)
+    fp1 = (campaign@network@size - campaign@seedingSize)*(1 - wom)^(campaign@network@size*(1 - price))*log(1 - wom)*(-1 + campaign@network@size*log(1 - wom)*(price - 1))
+    grad = campaign@network@size*(1 - 2*price) - (deriv_W(fp) * fp1*price + W(fp)) / (log(1 - wom))
     return(grad)
 }
+
 
 #' Computes the profit-maximizing price
 #' 
@@ -245,5 +247,65 @@ compareToFIMarket = function(campaign) {
                         profit = c(prInf, prWoM),
                         consumerSurplus = c(csInf, csWoM),
                         welfare = c(ewInf, ewWoM))
+    return(result)
+}
+
+#' Calculates the impact of incentivizing WoM communication
+#' 
+#' Calculates the impact of incentivizing WoM communication. Given a start forward probability and an expected end forward, 
+#' probability this function calculates changes in demand, consumer surplus, profit, cost for incentivizing and economic welfare
+#' for i) keeping the optimal price for the start forward probability or ii) setting the optimized price for the expected 
+#' forward probability.
+#' 
+#' @param campaign Word-of-Mouth campaign as instance of class \code{WoMCampaign}.
+#' @param expProb Expected forward probability when incentivizing WoM.
+#' @param rewardCost Cost per consumer acquired through the incentivization strategy.
+#' @param keepStartPrice Logical value indicating whether or not (default) the optimized price for the start forward probability will also used for the expected forward probability.
+#' @author Michael Scholz \email{michael.scholz@@th-deg.de}
+#' @author Thomas Woehner \email{Thomas.Woehner@@eah-jena.de}
+#' @author Ralf Peters \email{ralf.peters@@wiwi.uni-halle.de}
+#' @return Data frame containing the profit-maximizing price, the resulting demand, profit, consumer surplus and 
+#' economic welfare for the start WoM intensity and the expected WoM intensity.
+#' @seealso \code{\link{computeOptimalPrice}} \code{\link{computeProfit}} \code{\link{computeConsumerSurplus}}
+#' @examples 
+#' 
+#' network <- new("WoMNetwork", size = 1000, avgConnections = 5)
+#' campaign <- new("WoMCampaign", network = network, seedingSize = 10, forwardProbability = 0.2)
+#' incentivization <- incentivizeWoM(campaign = campaign, expProb = 0.25, rewardCost = 0.05)
+#' print(incentivization)
+#' 
+#' @export
+incentivizeWoM = function(campaign, expProb, rewardCost = 0, keepStartPrice = FALSE) {
+    p1 = computeOptimalPrice(campaign)
+    d1 = computeDemand(campaign, p1)
+    pr1 = computeProfit(campaign, p1)
+    cs1 = computeConsumerSurplus(campaign, p1)
+    ew1 = pr1 + cs1
+    int1 = computeWoMIntensity(campaign)
+    
+    campaign2 = campaign
+    campaign2@forwardProbability = expProb
+    if (keepStartPrice) {
+        p2 = p1
+    } else {
+        p2 = computeOptimalPrice(campaign2)
+    }
+    d2 = computeDemand(campaign2, p2)
+    pr2 = computeProfit(campaign2, p2)
+    cs2 = computeConsumerSurplus(campaign2, p2)
+    ew2 = pr2 + cs2
+    int2 = computeWoMIntensity(campaign2)
+    
+    incCost = (d2 - d1) * rewardCost
+    result = data.frame(
+        forwardProbability = c(campaign@forwardProbability, expProb),
+        womIntensity = c(int1, int2),
+        price = c(p1, p2),
+        demand = c(d1, d2),
+        profit = c(pr1, pr2),
+        consumerSurplus = c(cs1, cs2),
+        welfare = c(ew1, ew2),
+        cost = c(0, incCost)
+    )
     return(result)
 }
